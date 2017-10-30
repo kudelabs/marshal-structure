@@ -1,10 +1,13 @@
 = marshal-structure
 
-home :: https://github.com/drbrain/marshal-structure
+home :: https://github.com/kudelabs/marshal-structure
 rdoc :: http://docs.seattlerb.org/marshal-structure
 bugs :: https://github.com/drbrain/marshal-structure/issues
 
 == Description
+
+This project is based on https://github.com/drbrain/marshal-structure/, and is
+the cloned and updated version of it.
 
 Tools to inspect and analyze Ruby's Marshal serialization format.  Supports
 the Marshal 4.8 format which is emitted by ruby 1.8 through 2.x.

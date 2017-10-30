@@ -258,7 +258,7 @@ class Marshal::Structure::Tokenizer
       c.times do |i|
         x |= byte << (8 * i)
       end
-      
+
       x
     else
       return c + 5 if c < -4
@@ -367,10 +367,7 @@ class Marshal::Structure::Tokenizer
 
   def tokenize_hash_default # :nodoc:
     size = long
-
-    @state.push :any
-    @state.push size * 2 if size > 0
-
+    @state.concat Array.new(size * 2 + 1, :any)
     size
   end
 
@@ -446,4 +443,3 @@ class Marshal::Structure::Tokenizer
   alias tokenize_user_marshal tokenize_data # :nodoc:
 
 end
-

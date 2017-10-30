@@ -60,11 +60,6 @@ class Marshal::Structure
   end
 
   ##
-  # Version of Marshal::Structure you are using
-
-  VERSION = '2.0'
-
-  ##
   # The Marshal stream
 
   attr_reader :stream
@@ -148,10 +143,11 @@ class Marshal::Structure
   ##
   # Returns the structure of the Marshal stream.
 
-  def structure
+  def parse_to_structure!
+    return @memoized_structure if @memoized_structure
     parser = Marshal::Structure::Parser.new token_stream
 
-    parser.parse
+    @memoized_structure = parser.parse
   end
 
   ##
@@ -163,7 +159,8 @@ class Marshal::Structure
 
 end
 
+require 'marshal/structure/version'
 require 'marshal/structure/allocation_counter'
 require 'marshal/structure/parser'
 require 'marshal/structure/tokenizer'
-
+require 'marshal/structure/explorer'
