@@ -6,8 +6,8 @@ bugs :: https://github.com/drbrain/marshal-structure/issues
 
 == Description
 
-This project is based on https://github.com/drbrain/marshal-structure/, and is
-the cloned and updated version of it.
+This project is based on Eric Hodel's https://github.com/drbrain/marshal-structure/,
+and is the cloned and updated version of it tailored for our immediate needs.
 
 Tools to inspect and analyze Ruby's Marshal serialization format.  Supports
 the Marshal 4.8 format which is emitted by ruby 1.8 through 2.x.
@@ -25,25 +25,33 @@ Fancier usage:
   require 'marshal/structure'
 
   ms = Marshal::Structure.new Marshal.dump %w[hello world]
+  structure_array = ms.parse_to_structure!
 
-  # print the stream structure
-  pp ms.structure
+  # print the stream structure Array
+  pp structure_array
 
-  # show how many allocations are required to load the stream
-  p ms.count_allocations
+  # recursively traverse the structure Array and print info about :string entries
+  Marshal::Structure.yield_and_recursively_traverse_structure_array(structure_array) do |depth, el_type, el_id, *args|
+    if el_type == :string
+      puts "I am :#{el_type} at depth level ##{depth} containing '#{args[0]}'"
+    end
+  end
+
+  # compose hash of Symbols defined in the dump, by their symlink id encountered in the dump
+  Marshal::Structure.get_symbols_hash_by_id(structure_array)
+
+  # count distinct instances of user-defined objects in the stream (:object record)
+  Marshal::Structure.get_nonprimitive_object_counts(structure_array)
 
 == Installation
-
-  gem install marshal-structure
-
 == Developers
 
-After checking out the source, run:
+Add gem to the Gemfile:
 
-  $ rake newb
+gem 'marshal-structure', git: "git@github.com:kudelabs/marshal-structure.git", branch: "develop"
 
-This task will install any missing dependencies, run the tests/specs,
-and generate the RDoc.
+and run "bundle install".
+
 
 == License
 
