@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+require 'pp'
+require 'marshal/structure'
+require 'pry-nav'
+
+# Disable garbage collection to make things faster
+GC.disable
+
+puts "Reading the file..."
+fpath = ARGV[0] || raise("Expected path argument of file with serialized content.")
+fcontent = File.open(fpath, "r") do |f|
+  f.read
+end
+
+puts "Creating Marshal::Structure..."
+ms = Marshal::Structure.new(fcontent)
+puts "Parsing to structure..."
+struc = ms.parse_to_structure!
+puts "Counting objects..."
+obj_count_hash = Marshal::Structure.get_nonprimitive_object_counts(struc)
+
+# Enable GC again
+GC.enable
+
+pp obj_count_hash
