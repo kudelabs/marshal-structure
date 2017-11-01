@@ -17,6 +17,7 @@ puts "Creating Marshal::Structure..."
 ms = Marshal::Structure.new(fcontent)
 puts "Parsing to structure..."
 struc = ms.parse_to_structure!
+
 puts "Counting objects..."
 obj_count_hash = Marshal::Structure.get_nonprimitive_object_counts(struc)
 

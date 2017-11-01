@@ -78,7 +78,11 @@ class SimpleFixtureWithStructIvar
   end
 end
 
+# Now we place an instance of each fixture into objs hash to be saved as output
+# as well as analyze structure of each fixture and place result into strucs.
+objs = {}
 strucs = {}
+
 %w(SimpleFixtureNoIvars SimpleFixtureIntIvar SimpleFixtureStringIvar SimpleFixtureEncStringIvar
   SimpleFixtureArrIvar SimpleFixtureHashIvar SimpleFixtureWithIvarsArrayHash SimpleFixtureWithOtherObjIvar
   SimpleFixtureWithArrayLinkedIvar SimpleFixtureWithStructIvar).each do |klass_name|
@@ -86,9 +90,15 @@ strucs = {}
   klass = eval(klass_name)
   obj = klass.new
 
+  objs[klass_name] = obj
+
   ms = Marshal::Structure.new(Marshal.dump(obj))
   struc = ms.parse_to_structure!
   strucs[klass_name.to_sym] = struc
+end
+
+File.open("explore_simple_structures.dump", "w") do |f|
+  f << Marshal.dump(objs)
 end
 
 binding.pry

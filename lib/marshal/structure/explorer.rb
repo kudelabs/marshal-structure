@@ -46,12 +46,11 @@ class Marshal::Structure   #::Explorer
           if el_type.is_a?(Fixnum) || el_type == :instance_variables
             # useful info starts from position 1 - continue investigating in this iteration
           elsif el_type == :array || el_type == :hash || el_type == :struct
-            # "custom" move on: upon next iteration, let the cycle below investigate Array from entry 3
+            # "custom" move on: let the cycle below investigate Array from entry 3
             traverse_position_stack[-1] = 2  # in
           else
-            # "standard" move on: upon next iteration, let the cycle below investigate Array from entry 2
+            # "standard" move on: let the cycle below investigate Array from entry 2
             traverse_position_stack[-1] = 1
-            next
           end
 
         end
@@ -94,56 +93,53 @@ class Marshal::Structure   #::Explorer
 
       yield_and_recursively_traverse_structure_array(struc_arr) do |depth, el_type, el_id, curr_ary|
         # # in properly formed marshalled data symbol definition clearly must precede its linked use
-        if el_type == :symbol
-        #   sym_name = curr_ary[2]
-        #   sym_table[el_id] = sym_name.to_sym
-        # els
-          result[:symbol] = 0 if !result[:symbol]
-          result[:symbol] += 1
-        elsif el_type == :symbol_link
-          result[:symbol_link] = 0 if !result[:symbol_link]
-          result[:symbol_link] += 1
-        elsif el_type == :object
+
+        next if el_type.is_a?(Fixnum)  # this is a list of instance variables in an object - don't count anything quite yet
+
+        case el_type
+        when :symbol, :float, :fixnum, :bignum, :string
+          result[:primitives] = {} unless result[:primitives]
+          result[:primitives][el_type] = 0 unless result[:primitives][el_type]
+          result[:primitives][el_type] += 1
+        when :array, :hash, :hash_default, :struct
+          # primitives and fundamental data structures - simply count each of them
+          result[:collections] = Hash.new(0) unless result[:collections]
+          result[:collections][el_type] += 1
+        when :symbol_link, :link
+          result[:links] = {} unless result[:links]
+          result[:links][el_type] = 0 unless result[:links][el_type]
+          result[:links][el_type] += 1
+        when :object
           class_info = curr_ary[2]
           name_typ, name_symbol_id = class_info[0..1]
           raise "Unexpected Object name type ':#{name_typ}', only know how to handle :symbol or :symbol_link" unless name_typ == :symbol || name_typ == :symbol_link
           class_name = sym_table[name_symbol_id]
 
-          result[class_name] = 0 if !result[class_name]
-          result[class_name] += 1
-        elsif el_type == :user_class
+          result[:custom_objects] = Hash.new(0) unless result[:custom_objects]
+          result[:custom_objects][class_name] += 1
+        when :user_class, :extended
           class_info = curr_ary[1]
           name_typ, name_symbol_id = class_info[0..1]
           raise "Unexpected Object name type ':#{name_typ}', only know how to handle :symbol or :symbol_link" unless name_typ == :symbol || name_typ == :symbol_link
           class_name = sym_table[name_symbol_id]
 
-          result[class_name] = 0 if !result[class_name]
-          result[class_name] += 1
-        elsif el_type == :array
-          result[:Array] = 0 if !result[:Array]
-          result[:Array] += 1
-        elsif el_type == :hash
-          result[:Hash] = 0 if !result[:Hash]
-          result[:Hash] += 1
-        elsif el_type == :hash_default
-          # combine with ordinary hashes
-          result[:Hash] = 0 if !result[:Hash]
-          result[:Hash] += 1
-        elsif el_type == :float
-          result[:float] = 0 if !result[:float]
-          result[:float] += 1
-        elsif el_type == :fixnum
-          result[:fixnum] = 0 if !result[:fixnum]
-          result[:fixnum] += 1
-        elsif el_type == :string
-          result[:string] = 0 if !result[:string]
-          result[:string] += 1
-        #elsif el_type == :instance_variables
+          result[:custom_objects] = Hash.new(0) unless result[:custom_objects]
+          result[:custom_objects][class_name] += 1
+        when :user_marshal, :user_defined
+          class_info = curr_ary[2]
+          name_typ, name_symbol_id = class_info[0..1]
+          raise "Unexpected Object name type ':#{name_typ}', only know how to handle :symbol or :symbol_link" unless name_typ == :symbol || name_typ == :symbol_link
+          class_name = sym_table[name_symbol_id]
+
+          result[:custom_marshal_objects] = Hash.new(0) unless result[:custom_marshal_objects]
+          result[:custom_marshal_objects][class_name] += 1
+        when :instance_variables
           # ignore - this one normally references other objects
+          next
         else
-          result[:encountered_types_unsure_how_to_count] = {} unless result[:encountered_types_unsure_how_to_count]
-          result[:encountered_types_unsure_how_to_count][el_type] = 0 unless result[:encountered_types_unsure_how_to_count][el_type]
-          result[:encountered_types_unsure_how_to_count][el_type] += 1
+          result[:unsure_how_to_count] = {} unless result[:unsure_how_to_count]
+          result[:unsure_how_to_count][el_type] = 0 unless result[:unsure_how_to_count][el_type]
+          result[:unsure_how_to_count][el_type] += 1
         end
       end
       result
