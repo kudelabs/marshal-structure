@@ -41,7 +41,21 @@ Fancier usage:
   Marshal::Structure.get_symbols_hash_by_id(structure_array)
 
   # count distinct instances of user-defined objects in the stream (:object record)
-  Marshal::Structure.get_nonprimitive_object_counts(structure_array)
+  Marshal::Structure.get_object_counts(structure_array)
+
+== Scripts
+
+You can look at what structure certain simple fixtures have in the dump file:
+
+$ ruby -Ilib test/explore_simple_objects.rb
+
+- you will end up in 'pry' session where you can explore 'strucs' hash, and also
+the script will produce explore_simple_structures.dump file with dump of hash of
+all defined objects there.
+
+You can count objects in a dump using bin/count_entries:
+
+$ ruby -Ilib bin/count_entries explore_simple_structures.dump
 
 == Installation
 == Developers

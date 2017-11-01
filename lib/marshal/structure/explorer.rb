@@ -87,7 +87,7 @@ class Marshal::Structure   #::Explorer
       result
     end
 
-    def get_nonprimitive_object_counts(struc_arr)
+    def get_object_counts(struc_arr)
       sym_table = get_symbols_hash_by_id(struc_arr)
       result = {}
 
