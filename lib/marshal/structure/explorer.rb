@@ -40,9 +40,20 @@ class Marshal::Structure   #::Explorer
         # if we're just starting with the Array, we should yield to block and let it do its thingie
         if curr_pos == 0
           el_type, el_id = curr_ary[0], curr_ary[1]
+
           yield(depth, el_type, el_id, curr_ary)
-          traverse_position_stack[-1] = 1  # update label where we last are in current Array, to 1st position - at entry ID
-          next
+
+          if el_type.is_a?(Fixnum) || el_type == :instance_variables
+            # useful info starts from position 1 - continue investigating in this iteration
+          elsif el_type == :array || el_type == :hash || el_type == :struct
+            # "custom" move on: upon next iteration, let the cycle below investigate Array from entry 3
+            traverse_position_stack[-1] = 2  # in
+          else
+            # "standard" move on: upon next iteration, let the cycle below investigate Array from entry 2
+            traverse_position_stack[-1] = 1
+            next
+          end
+
         end
 
         # if we've already yielded and aren't at 0th position - let's look for nested Arrays
